@@ -4,8 +4,9 @@ from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 
+from app.api.schemas import StockAnalysisResponse
 from app.indicators.technical_indicators import add_technical_indicators
 from app.ml.predictor import predict_next_close
 from app.services.market_service import fetch_market_history
@@ -21,12 +22,18 @@ def _clean(value: Any) -> Any:
     return value
 
 
-@router.get("/{ticker}/analysis")
+@router.get("/{ticker}/analysis", response_model=StockAnalysisResponse)
 def analyze_stock(
-    ticker: str,
+    ticker: str = Path(
+        ...,
+        min_length=1,
+        max_length=20,
+        pattern=r"^[A-Za-z0-9.^=\-]+$",
+        description="Market ticker symbol, for example AAPL or BTC-USD.",
+    ),
     period: str = Query("2y", pattern="^(6mo|1y|2y|5y)$"),
     history_limit: int = Query(120, ge=30, le=500),
-) -> Dict[str, Any]:
+) -> StockAnalysisResponse:
     symbol = ticker.strip().upper()
     market_data = fetch_market_history(symbol, period=period)
     indicator_data = add_technical_indicators(market_data)
@@ -53,18 +60,18 @@ def analyze_stock(
         ]
     }
 
-    return {
-        "ticker": symbol,
-        "period": period,
-        "data_points": len(market_data),
-        "latest_market": {
+    return StockAnalysisResponse(
+        ticker=symbol,
+        period=period,
+        data_points=len(market_data),
+        latest_market={
             "open": round(float(latest["Open"]), 4),
             "high": round(float(latest["High"]), 4),
             "low": round(float(latest["Low"]), 4),
             "close": round(float(latest["Close"]), 4),
             "volume": int(latest["Volume"]),
         },
-        "technical_indicators": technical_indicators,
-        "prediction": prediction,
-        "history": history,
-    }
+        technical_indicators=technical_indicators,
+        prediction=prediction,
+        history=history,
+    )

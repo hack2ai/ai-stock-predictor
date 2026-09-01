@@ -7,4 +7,4 @@ numpy
 websockets
 joblib
 pytest
-httpx2
+httpx

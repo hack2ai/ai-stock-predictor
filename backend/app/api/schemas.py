@@ -48,6 +48,15 @@ class PredictionResult(BaseModel):
     disclaimer: str
 
 
+class AIExplanation(BaseModel):
+    summary: str
+    outlook: Literal["BULLISH", "BEARISH", "NEUTRAL"]
+    confidence: float = Field(ge=0, le=100)
+    key_signals: List[str]
+    risk_note: str
+    disclaimer: str
+
+
 class StockAnalysisResponse(BaseModel):
     ticker: str = Field(min_length=1, max_length=20)
     period: Literal["6mo", "1y", "2y", "5y"]
@@ -55,4 +64,5 @@ class StockAnalysisResponse(BaseModel):
     latest_market: MarketSnapshot
     technical_indicators: TechnicalIndicators
     prediction: PredictionResult
+    ai_explanation: AIExplanation
     history: List[HistoricalCandle]

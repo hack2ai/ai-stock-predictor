@@ -1,110 +1,56 @@
-# 📈 AI Stock Intelligence Platform
+# AI Stock Intelligence Platform
 
-<p align="center">
-  <strong>AI-powered stock market analysis using technical indicators, time-series validation, and machine-learning price estimation.</strong>
-</p>
+> A full-stack machine-learning platform for analyzing historical stock market data, generating technical indicators, and producing transparent next-session price estimates with validation and uncertainty information.
 
-<p align="center">
-  <a href="https://github.com/hack2ai/ai-stock-predictor"><img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status"></a>
-  <img src="https://img.shields.io/badge/Frontend-Next.js-black?style=flat-square&logo=next.js" alt="Next.js">
-  <img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi" alt="FastAPI">
-  <img src="https://img.shields.io/badge/ML-scikit--learn-F7931E?style=flat-square&logo=scikitlearn" alt="scikit-learn">
-  <img src="https://img.shields.io/badge/Data-yfinance-4CAF50?style=flat-square" alt="yfinance">
-</p>
-
-> **Educational use only.** Market analysis and model predictions are statistical estimates and are **not financial advice**.
-
----
+![Project](https://img.shields.io/badge/Project-AI%20Stock%20Intelligence-2563EB)
+![Frontend](https://img.shields.io/badge/Frontend-Next.js-000000)
+![Backend](https://img.shields.io/badge/Backend-FastAPI-009688)
+![ML](https://img.shields.io/badge/ML-scikit--learn-F7931E)
+![Status](https://img.shields.io/badge/Status-Complete-success)
 
 ## Overview
 
-**AI Stock Intelligence Platform** is a full-stack machine-learning application for analyzing historical stock-market data and producing transparent next-session price estimates.
+AI Stock Intelligence provides an end-to-end workflow for stock analysis:
 
-The platform combines historical OHLCV data, technical indicators, feature engineering, **Random Forest regression**, and **walk-forward time-series validation**. Results are delivered through a FastAPI REST API and visualized in a professional Next.js dashboard.
+1. Enter a stock ticker such as `AAPL`, `TSLA`, or `MSFT`.
+2. Fetch historical market data.
+3. Calculate technical indicators and engineered features.
+4. Run the machine-learning prediction pipeline.
+5. Display the predicted next-session close, expected percentage change, market signal, confidence score, model metrics, feature importance, and historical price chart.
 
-### What the platform provides
-
-- Historical market-data analysis
-- Technical indicators and volatility features
-- Machine-learning next-close estimation
-- Expected percentage change and market signal
-- Prediction confidence and uncertainty interval
-- MAE, RMSE, and R² model metrics
-- Feature-importance reporting
-- Interactive historical-price visualization
-- Typed REST API responses
-- API rate limiting and TTL caching
-- Security headers and request logging
-- Automated tests and GitHub Actions CI
-- Docker and Docker Compose support
-
----
+The application is designed for educational analysis and does **not** provide financial advice.
 
 ## Key Features
 
-### 📊 Market Analysis
+- Stock ticker analysis for supported market symbols.
+- Historical OHLCV market data.
+- Interactive historical closing-price visualization.
+- Next-session statistical price estimate.
+- Expected percentage change calculation.
+- Bullish, bearish, or neutral market signal.
+- Model confidence score.
+- Technical indicators including SMA, EMA, RSI, MACD, MACD signal, MACD histogram, Bollinger Bands, and volatility features.
+- Model evaluation using MAE, RMSE, and R².
+- Feature-importance visualization for transparent predictions.
+- Input and ticker validation.
+- Responsive dark dashboard UI.
+- API rate limiting, caching, security headers, and request logging.
+- Automated testing and CI support.
 
-Analyze a stock ticker using historical OHLCV data obtained through `yfinance`.
+## Screenshots
 
-### 📈 Technical Indicators
+Screenshots from the completed dashboard can be added under `docs/screenshots/`:
 
-The analysis pipeline includes:
-
-- SMA
-- EMA
-- RSI
-- MACD
-- Bollinger Bands
-- Volatility features
-
-### 🤖 Machine Learning
-
-- Random Forest regression
-- Time-series feature engineering
-- Next-session closing-price estimation
-- Feature-importance analysis
-
-### 🧪 Model Validation
-
-The model is evaluated using **walk-forward time-series validation** with:
-
-- **MAE** — Mean Absolute Error
-- **RMSE** — Root Mean Squared Error
-- **R²** — Coefficient of determination
-
-### 🎯 Prediction Intelligence
-
-Each analysis can provide:
-
-- Predicted next close
-- Expected percentage change
-- Bullish, Bearish, or Neutral signal
-- Confidence score
-- Prediction interval
-- AI explanation and interpretation
-
-### 🖥️ Interactive Dashboard
-
-The Next.js dashboard visualizes:
-
-- Current market price
-- AI next-session estimate
-- Expected percentage change
-- Prediction uncertainty range
-- Historical closing-price chart
-- Market snapshot
+- Historical price analysis
 - Technical indicators
-- Model-quality metrics
-- Walk-forward validation metadata
-- Top model features
-
----
+- Model quality metrics
+- Feature importance
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[Market Data<br/>yfinance] --> B[Market Data Service]
+    A[Market Data] --> B[Market Data Service]
     B --> C[Feature Engineering]
     C --> D[Technical Indicators]
     D --> E[Random Forest Model]
@@ -117,27 +63,6 @@ flowchart LR
     K[Rate Limiter] --> H
     L[Security Middleware] --> H
 ```
-
-### Request Flow
-
-```text
-User
-  ↓
-Next.js Dashboard
-  ↓ HTTP
-FastAPI API
-  ├── Rate Limiting
-  ├── TTL Cache
-  └── Security Middleware
-        ↓
-Market Data → Features → ML Model → Validation → Prediction
-        ↓
-Structured API Response
-        ↓
-Charts + Indicators + Prediction Interval
-```
-
----
 
 ## ML Pipeline
 
@@ -157,20 +82,16 @@ MAE / RMSE / R²
 Next-Session Estimate + Prediction Interval
 ```
 
----
-
 ## Technology Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js, React, TypeScript, Tailwind CSS, Recharts |
+| Frontend | Next.js, React, TypeScript, CSS |
 | Backend | Python, FastAPI, Uvicorn, Pydantic |
 | Machine Learning | scikit-learn, Random Forest |
 | Data Processing | Pandas, NumPy, yfinance |
 | DevOps | Docker, Docker Compose, GitHub Actions |
-| Quality & Security | Automated tests, rate limiting, caching, CORS, security headers |
-
----
+| Quality & Security | Tests, rate limiting, caching, CORS, security headers |
 
 ## Project Structure
 
@@ -179,16 +100,10 @@ Next-Session Estimate + Prediction Interval
 ├── backend/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── routes/
-│   │   │   └── schemas.py
 │   │   ├── core/
-│   │   │   ├── cache.py
-│   │   │   ├── config.py
-│   │   │   └── security.py
 │   │   ├── indicators/
 │   │   ├── ml/
 │   │   └── services/
-│   ├── ml_model/
 │   ├── tests/
 │   ├── main.py
 │   ├── requirements.txt
@@ -198,14 +113,10 @@ Next-Session Estimate + Prediction Interval
 │   │   ├── app/
 │   │   └── components/
 │   └── package.json
-├── .github/workflows/ci.yml
-├── .env.example
+├── .github/workflows/
 ├── docker-compose.yml
-├── .gitignore
 └── README.md
 ```
-
----
 
 ## API
 
@@ -213,15 +124,6 @@ Next-Session Estimate + Prediction Interval
 
 ```http
 GET /health
-```
-
-Example response:
-
-```json
-{
-  "status": "ok",
-  "service": "ai-stock-intelligence-api"
-}
 ```
 
 ### Stock Intelligence Analysis
@@ -238,15 +140,11 @@ Example:
 
 The response includes market data, technical indicators, prediction output, confidence information, validation metrics, and feature importance.
 
-### Interactive API Documentation
-
-After starting the backend, open:
+Interactive API documentation:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
-
----
 
 ## Local Development
 
@@ -257,13 +155,13 @@ cd backend
 python -m venv venv
 ```
 
-**Windows:**
+Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-**macOS/Linux:**
+macOS/Linux:
 
 ```bash
 source venv/bin/activate
@@ -298,51 +196,35 @@ Frontend:
 http://localhost:3000
 ```
 
-Optional frontend environment configuration:
+Optional environment configuration:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
----
-
 ## Production Build
-
-Verify the frontend production build with:
 
 ```bash
 cd frontend
 npm run build
 ```
 
----
-
 ## Docker
-
-Start the application stack with:
 
 ```bash
 docker compose up --build
 ```
 
----
-
 ## Testing
-
-Run backend tests:
 
 ```bash
 cd backend
 PYTHONPATH=. pytest tests -q
 ```
 
-The GitHub Actions workflow runs backend tests and the frontend production build on repository pushes and pull requests.
-
----
-
 ## Tested Locally
 
-The application has been successfully tested with:
+The application has been tested with:
 
 ```text
 AAPL
@@ -350,46 +232,28 @@ TSLA
 MSFT
 ```
 
-Verified functionality includes:
+Verified functionality includes successful backend API responses, frontend-to-backend integration, historical-price charts, AI predictions, market signals, technical indicators, model-quality metrics, feature-importance visualization, and a successful frontend production build.
 
-- Successful backend API responses
-- Frontend-to-backend integration
-- Historical-price charts
-- AI predictions
-- Market signals
-- Technical indicators
-- Model-quality metrics
-- Feature-importance visualization
-- Successful frontend production build
+## Model Transparency
 
----
+The platform exposes more than a single predicted value. It also provides:
 
-## Screenshots
-
-Project screenshots can be added to a `screenshots/` directory and displayed here, for example:
-
-```text
-screenshots/
-├── dashboard.png
-├── stock-analysis.png
-├── historical-chart.png
-├── technical-indicators.png
-└── model-quality.png
-```
-
----
+- MAE for average absolute prediction error.
+- RMSE for larger-error sensitivity.
+- R² for explanatory performance.
+- Feature importance showing which inputs contribute most to the model.
+- Technical indicators for market context.
+- Confidence and uncertainty information.
 
 ## Production Considerations
 
-The current implementation includes rate limiting, caching, CORS configuration, and security headers. For larger-scale production deployment, consider:
+The current implementation includes rate limiting, caching, CORS configuration, and security headers. For larger-scale deployment, consider:
 
-- Redis-backed caching and distributed rate limiting
-- Licensed real-time market-data providers
-- Model version tracking and experiment logging
-- Scheduled model evaluation and retraining
-- Monitoring and structured observability
-
----
+- Redis-backed caching and distributed rate limiting.
+- Licensed real-time market-data providers.
+- Model version tracking and experiment logging.
+- Scheduled model evaluation and retraining.
+- Monitoring and structured observability.
 
 ## Roadmap
 
@@ -401,17 +265,12 @@ The current implementation includes rate limiting, caching, CORS configuration, 
 - [ ] Scheduled prediction alerts
 - [ ] Model version tracking
 - [ ] Cloud deployment
-- [ ] Production real-time streaming
-
----
 
 ## Disclaimer
 
 This project is intended for **education, research, and demonstration purposes**. Machine-learning predictions are statistical estimates and do not guarantee future market performance.
 
-Do not use this application as the sole basis for investment decisions. Always conduct independent research and consult a qualified financial professional where appropriate.
-
----
+Do not use this application as the sole basis for investment decisions.
 
 ## Author
 
@@ -424,7 +283,4 @@ AI Engineer · Full Stack Developer · AI/ML Enthusiast
 
 ---
 
-<p align="center">
-  <strong>📈 AI Stock Intelligence Platform</strong><br>
-  Turning historical market data into structured, machine-learning-powered insights.
-</p>
+**AI Stock Intelligence Platform** — turning historical market data into structured, machine-learning-powered insights.

@@ -2,9 +2,11 @@ from datetime import datetime
 from typing import Dict, List
 import asyncio
 import json
+import logging
 import random
+import time
 
-from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
 
@@ -12,9 +14,12 @@ from app.api.routes.analysis import router as analysis_router
 from app.core.config import get_cors_origins
 from ml_model.predict import predict_future
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ai_stock_intelligence")
+
 app = FastAPI(
     title="AI Stock Intelligence API",
-    version="1.0.0",
+    version="1.1.0",
     description="Market analysis and machine-learning prediction API.",
 )
 
@@ -25,6 +30,26 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def security_and_logging_middleware(request: Request, call_next):
+    started = time.perf_counter()
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    duration_ms = (time.perf_counter() - started) * 1000
+    logger.info(
+        "%s %s -> %s in %.2fms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
 
 app.include_router(analysis_router)
 

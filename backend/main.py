@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
 
 from app.api.routes.analysis import router as analysis_router
+from app.core.config import get_cors_origins
 from ml_model.predict import predict_future
 
 app = FastAPI(
@@ -19,9 +20,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -89,22 +90,18 @@ async def websocket_endpoint(websocket: WebSocket, ticker: str):
             await asyncio.sleep(1)
             change = current_price * random.uniform(-0.001, 0.001)
             current_price += change
-            await manager.broadcast(
-                {
-                    "ticker": symbol,
-                    "price": round(current_price, 2),
-                    "time": datetime.now().strftime("%H:%M:%S"),
-                    "change": round(change, 2),
-                    "change_percent": round((change / (current_price - change)) * 100, 3),
-                    "source": "simulation",
-                },
-                symbol,
-            )
+            await manager.broadcast({
+                "ticker": symbol,
+                "price": round(current_price, 2),
+                "time": datetime.now().strftime("%H:%M:%S"),
+                "change": round(change, 2),
+                "change_percent": round((change / (current_price - change)) * 100, 3),
+                "source": "simulation",
+            }, symbol)
     except WebSocketDisconnect:
         manager.disconnect(websocket, symbol)
 
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)

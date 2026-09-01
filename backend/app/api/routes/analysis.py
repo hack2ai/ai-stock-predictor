@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Path, Query, Request, status
 
-from app.api.schemas import StockAnalysisResponse
+from app.api.schemas import AIExplanation, StockAnalysisResponse
 from app.core.cache import analysis_cache
 from app.core.security import enforce_rate_limit
 from app.indicators.technical_indicators import add_technical_indicators
@@ -22,6 +22,83 @@ def _clean(value: Any) -> Any:
     if pd.isna(value):
         return None
     return value
+
+
+def generate_ai_explanation(
+    ticker: str,
+    prediction: Dict[str, Any],
+    technical_indicators: Dict[str, Any],
+) -> AIExplanation:
+    current_price = float(prediction.get("current_price", 0.0))
+    predicted_price = float(prediction.get("predicted_next_close", current_price))
+    expected_change = float(prediction.get("expected_change_percent", 0.0))
+    trend = str(prediction.get("trend", "NEUTRAL")).upper()
+    confidence = float(prediction.get("confidence_score", 0.0))
+
+    signals: List[str] = []
+    rsi = technical_indicators.get("rsi_14")
+    macd = technical_indicators.get("macd")
+    macd_signal = technical_indicators.get("macd_signal")
+    sma_20 = technical_indicators.get("sma_20")
+    sma_50 = technical_indicators.get("sma_50")
+
+    if rsi is not None:
+        if rsi >= 70:
+            signals.append(f"RSI is {rsi:.1f}, indicating potentially overbought conditions.")
+        elif rsi <= 30:
+            signals.append(f"RSI is {rsi:.1f}, indicating potentially oversold conditions.")
+        else:
+            signals.append(f"RSI is {rsi:.1f}, which is within a neutral range.")
+
+    if macd is not None and macd_signal is not None:
+        if macd > macd_signal:
+            signals.append("MACD is above its signal line, supporting positive momentum.")
+        else:
+            signals.append("MACD is below its signal line, suggesting weaker momentum.")
+
+    if sma_20 is not None and sma_50 is not None:
+        if sma_20 > sma_50:
+            signals.append("The 20-day SMA is above the 50-day SMA, supporting the broader trend.")
+        else:
+            signals.append("The 20-day SMA is below the 50-day SMA, which may indicate trend weakness.")
+
+    if not signals:
+        signals.append("Technical indicator data is limited, so the explanation is based mainly on the model prediction.")
+
+    if trend == "BULLISH" or expected_change > 0:
+        summary = (
+            f"The model expects {ticker} to move from approximately {current_price:.2f} "
+            f"to {predicted_price:.2f}, an estimated change of {expected_change:.2f}%"
+            ". The current signal is positive, but market conditions can change quickly."
+        )
+        outlook: Literal["BULLISH", "BEARISH", "NEUTRAL"] = "BULLISH"
+    elif trend == "BEARISH" or expected_change < 0:
+        summary = (
+            f"The model expects {ticker} to move from approximately {current_price:.2f} "
+            f"to {predicted_price:.2f}, an estimated change of {expected_change:.2f}%"
+            ". The current signal is negative, so risk management is important."
+        )
+        outlook = "BEARISH"
+    else:
+        summary = (
+            f"The model expects limited short-term movement for {ticker}, with a predicted next close "
+            f"near {predicted_price:.2f}. Current indicators do not show a strong directional signal."
+        )
+        outlook = "NEUTRAL"
+
+    risk_note = (
+        "This explanation combines the current model prediction with technical indicators. "
+        "Unexpected market news, earnings, and macroeconomic events can make actual prices differ from the prediction."
+    )
+
+    return AIExplanation(
+        summary=summary,
+        outlook=outlook,
+        confidence=round(max(0.0, min(confidence, 100.0)), 2),
+        key_signals=signals,
+        risk_note=risk_note,
+        disclaimer="Educational information only; this is not financial advice or a guarantee of future market performance.",
+    )
 
 
 def _build_analysis(symbol: str, period: str, history_limit: int) -> StockAnalysisResponse:
@@ -53,6 +130,12 @@ def _build_analysis(symbol: str, period: str, history_limit: int) -> StockAnalys
         ]
     }
 
+    ai_explanation = generate_ai_explanation(
+        symbol,
+        prediction,
+        technical_indicators,
+    )
+
     return StockAnalysisResponse(
         ticker=symbol,
         period=period,
@@ -66,6 +149,7 @@ def _build_analysis(symbol: str, period: str, history_limit: int) -> StockAnalys
         },
         technical_indicators=technical_indicators,
         prediction=prediction,
+        ai_explanation=ai_explanation,
         history=history,
     )
 

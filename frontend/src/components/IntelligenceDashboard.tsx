@@ -2,23 +2,7 @@
 
 import { BarChart3, BrainCircuit, ShieldAlert, TrendingDown, TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
-type Analysis = {
-  ticker: string;
-  latest_market: { close: number; volume: number };
-  history: { date: string; open: number; high: number; low: number; close: number; volume: number }[];
-  technical_indicators: Record<string, number | null>;
-  prediction: {
-    current_price?: number;
-    predicted_next_close: number;
-    expected_change_percent: number;
-    trend: "BULLISH" | "BEARISH" | "NEUTRAL";
-    confidence_score: number;
-    metrics: { mae: number; rmse: number; r2: number };
-    feature_importance: Record<string, number>;
-    disclaimer: string;
-  };
-};
+import type { Analysis } from "@/types/analysis";
 
 const formatNumber = (value: number | null | undefined, digits = 2) =>
   typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "—";
@@ -27,18 +11,12 @@ export default function IntelligenceDashboard({ analysis }: { analysis: Analysis
   const prediction = analysis.prediction;
   const positive = prediction.expected_change_percent >= 0;
   const topFeatures = Object.entries(prediction.feature_importance ?? {}).slice(0, 5);
-  const chartData = (analysis.history ?? []).map((item) => ({
-    date: item.date.slice(5),
-    close: item.close,
-  }));
+  const chartData = (analysis.history ?? []).map((item) => ({ date: item.date.slice(5), close: item.close }));
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
-      <section className="lg:col-span-2 rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6 backdrop-blur-xl">
-        <div className="mb-6 flex items-center gap-3">
-          <BrainCircuit className="text-blue-400" />
-          <div><h2 className="text-xl font-bold">AI Market Intelligence</h2><p className="text-sm text-slate-400">Next-session statistical estimate</p></div>
-        </div>
+      <section className="rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6 backdrop-blur-xl lg:col-span-2">
+        <div className="mb-6 flex items-center gap-3"><BrainCircuit className="text-blue-400" /><div><h2 className="text-xl font-bold">AI Market Intelligence</h2><p className="text-sm text-slate-400">Next-session statistical estimate</p></div></div>
         <div className="grid gap-4 sm:grid-cols-3">
           <MetricCard label="Current Close" value={`$${formatNumber(analysis.latest_market.close)}`} />
           <MetricCard label="AI Estimate" value={`$${formatNumber(prediction.predicted_next_close)}`} />
@@ -52,7 +30,7 @@ export default function IntelligenceDashboard({ analysis }: { analysis: Analysis
         <p className="mt-4 text-sm text-slate-400">Model confidence score: <strong className="text-white">{formatNumber(prediction.confidence_score, 1)}%</strong></p>
       </section>
 
-      <section className="lg:col-span-2 rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6">
+      <section className="rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6 lg:col-span-2">
         <h3 className="mb-5 font-semibold">Historical Closing Price</h3>
         <div className="h-80 min-h-[320px] w-full min-w-0">
           {chartData.length > 0 ? (
@@ -62,7 +40,7 @@ export default function IntelligenceDashboard({ analysis }: { analysis: Analysis
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                 <YAxis domain={["auto", "auto"]} tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(value) => {
+                <Tooltip formatter={(value: number | string | readonly (number | string)[] | undefined) => {
                   const rawValue = Array.isArray(value) ? value[0] : value;
                   return `$${formatNumber(typeof rawValue === "number" ? rawValue : Number(rawValue))}`;
                 }} />

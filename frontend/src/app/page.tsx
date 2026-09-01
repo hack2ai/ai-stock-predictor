@@ -16,7 +16,7 @@ type Analysis = {
     predicted_next_close: number;
     prediction_interval: { lower: number; upper: number; confidence_level: number };
     expected_change_percent: number;
-    trend: string;
+    trend: "BULLISH" | "BEARISH" | "NEUTRAL";
     confidence_score: number;
     metrics: { mae: number; rmse: number; r2: number };
     validation: { method: string; samples: number };
@@ -38,7 +38,7 @@ export default function Home() {
     setError("");
     try {
       const response = await axios.get(`${API_BASE}/api/v1/stocks/${encodeURIComponent(symbol)}/analysis`);
-      setAnalysis(response.data);
+      setAnalysis(response.data as Analysis);
       setTicker(symbol);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) setError(err.response?.data?.detail || err.message);

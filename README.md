@@ -1,40 +1,81 @@
 # AI Stock Intelligence Platform
 
-A full-stack machine-learning platform for analyzing historical market data, generating technical indicators, and producing transparent next-session price estimates.
+A full-stack machine-learning platform for analyzing historical market data, generating technical indicators, and producing transparent next-session price estimates with validation and uncertainty information.
 
-> **Educational use only.** Market analysis and model predictions are estimates, not financial advice.
+> **Educational use only.** Market analysis and model predictions are statistical estimates, not financial advice.
 
-## Features
+## Key Highlights
 
-- Stock and ticker search
+- Stock and ticker analysis
 - Historical OHLCV market data via yfinance
-- Technical indicators: SMA, EMA, RSI, MACD and Bollinger Bands
-- Volatility and return analysis
+- Technical indicators: SMA, EMA, RSI, MACD, Bollinger Bands and volatility
+- Feature engineering with time-series features
 - Random Forest regression for next-close estimation
-- MAE, RMSE and R² model metrics
+- Walk-forward time-series validation
+- MAE, RMSE and R² evaluation metrics
+- Prediction uncertainty interval
 - Feature-importance reporting
 - Bullish, Bearish or Neutral trend classification
-- Professional Next.js dashboard
-- FastAPI REST API
+- Professional Next.js intelligence dashboard
+- FastAPI REST API with typed Pydantic response contracts
+- API rate limiting and TTL caching
+- Security headers and request logging
 - Automated tests and GitHub Actions CI
 - Docker and Docker Compose support
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    A[Market Data<br/>yfinance] --> B[Market Data Service]
+    B --> C[Feature Engineering]
+    C --> D[Technical Indicators]
+    D --> E[Random Forest Model]
+    E --> F[Walk-Forward Validation]
+    F --> G[Prediction + Uncertainty]
+    G --> H[FastAPI REST API]
+    H --> I[Next.js Intelligence Dashboard]
+
+    J[TTL Cache] --> H
+    K[Rate Limiter] --> H
+    L[Security Middleware] --> H
+```
+
+### Request Flow
+
 ```text
-Market Data (yfinance)
+User
+  ↓
+Next.js Dashboard
+  ↓ HTTP
+FastAPI API
+  ├── Rate Limiting
+  ├── TTL Cache
+  └── Security Middleware
         ↓
-Market Data Service
+Market Data → Features → ML Model → Validation → Prediction
         ↓
-Feature Engineering + Technical Indicators
+Structured API Response
         ↓
-Random Forest Training
+Charts + Indicators + Prediction Interval
+```
+
+## ML Pipeline
+
+```text
+Historical OHLCV Data
         ↓
-Prediction + Metrics + Feature Importance
+Technical Indicators + Lag Features
         ↓
-FastAPI REST API
+Feature Dataset
         ↓
-Next.js Intelligence Dashboard
+Random Forest Regressor
+        ↓
+Walk-Forward Time-Series Validation
+        ↓
+MAE / RMSE / R²
+        ↓
+Next-Session Estimate + 95% Prediction Interval
 ```
 
 ## Project Structure
@@ -43,7 +84,13 @@ Next.js Intelligence Dashboard
 .
 ├── backend/
 │   ├── app/
-│   │   ├── api/routes/
+│   │   ├── api/
+│   │   │   ├── routes/
+│   │   │   └── schemas.py
+│   │   ├── core/
+│   │   │   ├── cache.py
+│   │   │   ├── config.py
+│   │   │   └── security.py
 │   │   ├── indicators/
 │   │   ├── ml/
 │   │   └── services/
@@ -62,12 +109,21 @@ Next.js Intelligence Dashboard
 └── README.md
 ```
 
-## API
+## API Showcase
 
 ### Health check
 
 ```text
 GET /health
+```
+
+Example response:
+
+```json
+{
+  "status": "ok",
+  "service": "ai-stock-intelligence-api"
+}
 ```
 
 ### Stock intelligence analysis
@@ -82,7 +138,46 @@ Example:
 /api/v1/stocks/AAPL/analysis?period=2y&history_limit=120
 ```
 
-The response includes latest market data, technical indicators, historical records, prediction estimates, confidence score, evaluation metrics and feature importance.
+The response includes:
+
+```json
+{
+  "ticker": "AAPL",
+  "latest_market": {},
+  "technical_indicators": {},
+  "prediction": {
+    "predicted_next_close": 0,
+    "prediction_interval": {
+      "lower": 0,
+      "upper": 0,
+      "confidence_level": 95
+    },
+    "confidence_score": 0,
+    "validation": {
+      "method": "walk_forward_time_series"
+    },
+    "metrics": {
+      "mae": 0,
+      "rmse": 0,
+      "r2": 0
+    }
+  }
+}
+```
+
+## Dashboard
+
+The frontend visualizes:
+
+- Current market price
+- AI next-session estimate
+- Expected percentage change
+- Prediction uncertainty range
+- Historical closing-price chart
+- Technical indicators
+- Model quality metrics
+- Walk-forward validation metadata
+- Top model features
 
 ## Local Development
 
@@ -146,27 +241,27 @@ Backend tests:
 
 ```bash
 cd backend
-pytest tests -q
+PYTHONPATH=. pytest tests -q
 ```
 
 The GitHub Actions workflow runs backend tests and the frontend production build on pushes and pull requests.
 
-## Production Notes
+## Production Considerations
 
-Before deploying publicly:
+The current implementation includes rate limiting, caching, CORS configuration and security headers. For a multi-instance production deployment, consider:
 
-- Restrict CORS to trusted frontend domains.
-- Add API rate limiting and caching for market-data requests.
-- Replace simulated WebSocket prices with a licensed real-time market-data provider when presenting live data.
-- Add walk-forward validation and prediction intervals before making stronger forecasting claims.
-- Store model versions and evaluation results for reproducibility.
+- Redis-backed caching and distributed rate limiting
+- A licensed real-time market-data provider for live prices
+- Model version tracking and experiment logging
+- Scheduled model evaluation and retraining
+- Monitoring and structured observability
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js, React, TypeScript, Tailwind CSS |
-| Backend | Python, FastAPI, Uvicorn |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS, Recharts |
+| Backend | Python, FastAPI, Uvicorn, Pydantic |
 | ML | scikit-learn, Random Forest |
 | Data | Pandas, NumPy, yfinance |
 | DevOps | Docker, Docker Compose, GitHub Actions |

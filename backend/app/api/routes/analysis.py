@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal
 
 import numpy as np
 import pandas as pd
@@ -130,11 +130,7 @@ def _build_analysis(symbol: str, period: str, history_limit: int) -> StockAnalys
         ]
     }
 
-    ai_explanation = generate_ai_explanation(
-        symbol,
-        prediction,
-        technical_indicators,
-    )
+    ai_explanation = generate_ai_explanation(symbol, prediction, technical_indicators)
 
     return StockAnalysisResponse(
         ticker=symbol,
@@ -163,7 +159,7 @@ def analyze_stock(
 ) -> StockAnalysisResponse:
     enforce_rate_limit(request)
     symbol = ticker.strip().upper()
-    cache_key = f"analysis:{symbol}:{period}:{history_limit}"
+    cache_key = f"analysis:v2:{symbol}:{period}:{history_limit}"
 
     try:
         return analysis_cache.get_or_set(

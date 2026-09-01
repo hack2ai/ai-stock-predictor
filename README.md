@@ -1,89 +1,92 @@
-# Real-Time AI Stock Predictor
+# AI Stock Intelligence Platform
 
-> A full-stack machine-learning application for exploring historical market data, simulated real-time price updates, and short-horizon price predictions through an interactive web dashboard.
+A full-stack machine-learning platform for analyzing historical market data, generating technical indicators, and producing transparent next-session price estimates.
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-[![WebSockets](https://img.shields.io/badge/WebSockets-Realtime-0F172A?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+> **Educational use only.** Market analysis and model predictions are estimates, not financial advice.
 
-## Overview
+## Features
 
-This project combines a **Next.js frontend** with a **FastAPI + Python machine-learning backend**. Historical market data is retrieved through `yfinance`, features are prepared with Python data tooling, and a Random Forest regression model is used to generate experimental short-term predictions.
-
-The interface presents historical and predicted values through interactive charts while WebSockets provide the real-time update channel.
-
-> **Disclaimer:** This is an educational machine-learning project, not financial advice. Model predictions are experimental and should not be used as a basis for investment decisions.
+- Stock and ticker search
+- Historical OHLCV market data via yfinance
+- Technical indicators: SMA, EMA, RSI, MACD and Bollinger Bands
+- Volatility and return analysis
+- Random Forest regression for next-close estimation
+- MAE, RMSE and R² model metrics
+- Feature-importance reporting
+- Bullish, Bearish or Neutral trend classification
+- Professional Next.js dashboard
+- FastAPI REST API
+- Automated tests and GitHub Actions CI
+- Docker and Docker Compose support
 
 ## Architecture
 
 ```text
-                 Market Data
-                     │
-                  yfinance
-                     │
-                     ▼
-              Python Data Layer
-                     │
-              Feature Preparation
-                     │
-                     ▼
-            Random Forest Regressor
-                     │
-             Prediction Service
-                     │
-              FastAPI + WebSocket
-                     │
-                     ▼
-            Next.js / React UI
-                     │
-               Recharts Dashboard
+Market Data (yfinance)
+        ↓
+Market Data Service
+        ↓
+Feature Engineering + Technical Indicators
+        ↓
+Random Forest Training
+        ↓
+Prediction + Metrics + Feature Importance
+        ↓
+FastAPI REST API
+        ↓
+Next.js Intelligence Dashboard
 ```
-
-## Key Features
-
-- Historical market-data ingestion
-- Random Forest regression model
-- Experimental 7-day prediction horizon
-- Simulated live price updates
-- WebSocket-based real-time communication
-- Interactive historical/prediction charts
-- Responsive Next.js dashboard
-- Python/FastAPI backend
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js • React • Tailwind CSS |
-| Visualization | Recharts • Lucide React |
-| Backend | FastAPI • Uvicorn • Python |
-| Realtime | WebSockets |
-| Machine Learning | scikit-learn Random Forest |
-| Data | Pandas • NumPy • yfinance |
 
 ## Project Structure
 
 ```text
 .
 ├── backend/
+│   ├── app/
+│   │   ├── api/routes/
+│   │   ├── indicators/
+│   │   ├── ml/
+│   │   └── services/
+│   ├── tests/
 │   ├── main.py
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── Dockerfile
 ├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   └── components/
 │   └── package.json
+├── .github/workflows/ci.yml
+├── .env.example
+├── docker-compose.yml
 └── README.md
 ```
 
+## API
+
+### Health check
+
+```text
+GET /health
+```
+
+### Stock intelligence analysis
+
+```text
+GET /api/v1/stocks/{ticker}/analysis
+```
+
+Example:
+
+```text
+/api/v1/stocks/AAPL/analysis?period=2y&history_limit=120
+```
+
+The response includes latest market data, technical indicators, historical records, prediction estimates, confidence score, evaluation metrics and feature importance.
+
 ## Local Development
 
-### Prerequisites
-
-- Python 3.x
-- Node.js 18+
-- npm
-
-### 1. Start the backend
+### Backend
 
 ```bash
 cd backend
@@ -93,7 +96,7 @@ python -m venv venv
 Windows:
 
 ```bash
-.\venv\Scripts\activate
+venv\Scripts\activate
 ```
 
 macOS/Linux:
@@ -102,19 +105,18 @@ macOS/Linux:
 source venv/bin/activate
 ```
 
-Install dependencies and start FastAPI:
+Install and run:
 
 ```bash
 pip install -r requirements.txt
-python main.py
+uvicorn main:app --reload
 ```
 
-Backend:
-`http://localhost:8000`
+Backend API: `http://localhost:8000`
 
-### 2. Start the frontend
+### Frontend
 
-Open a second terminal:
+In another terminal:
 
 ```bash
 cd frontend
@@ -122,58 +124,58 @@ npm install
 npm run dev
 ```
 
-Frontend:
-`http://localhost:3000`
+Frontend: `http://localhost:3000`
 
-## Machine-Learning Pipeline
+Create frontend environment configuration when needed:
 
-```text
-Historical Data
-      ↓
-Data Cleaning / Preparation
-      ↓
-Feature Construction
-      ↓
-Random Forest Training
-      ↓
-Prediction Generation
-      ↓
-API Response
-      ↓
-Interactive Visualization
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
-The current implementation uses the recent historical dataset to train a Random Forest regression model and produces a short prediction horizon. Model quality can vary substantially with market regime, data quality, feature selection, and evaluation methodology.
+## Docker
 
-## Engineering Considerations
+Start the application stack with:
 
-For a production-grade forecasting system, the next engineering steps would include:
+```bash
+docker compose up --build
+```
 
-- Strict train/validation/test time splits
-- Walk-forward backtesting
-- Baseline models for comparison
-- Prediction intervals and uncertainty estimates
-- Feature importance and model diagnostics
-- Data caching and rate-limit handling
-- Structured API error handling
-- Observability and model-performance monitoring
-- Reproducible model/version tracking
+## Testing
 
-## Security & Reliability
+Backend tests:
 
-- Keep external API/data-provider credentials out of source control.
-- Validate API inputs before processing ticker symbols or date ranges.
-- Add rate limiting before exposing the API publicly.
-- Restrict CORS to trusted frontend origins in production.
-- Handle upstream data-provider failures gracefully.
+```bash
+cd backend
+pytest tests -q
+```
 
-## Project Value
+The GitHub Actions workflow runs backend tests and the frontend production build on pushes and pull requests.
 
-This project demonstrates practical integration of **machine learning, financial-data pipelines, Python APIs, WebSockets, and modern React/Next.js visualization** in a single full-stack application.
+## Production Notes
+
+Before deploying publicly:
+
+- Restrict CORS to trusted frontend domains.
+- Add API rate limiting and caching for market-data requests.
+- Replace simulated WebSocket prices with a licensed real-time market-data provider when presenting live data.
+- Add walk-forward validation and prediction intervals before making stronger forecasting claims.
+- Store model versions and evaluation results for reproducibility.
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| Backend | Python, FastAPI, Uvicorn |
+| ML | scikit-learn, Random Forest |
+| Data | Pandas, NumPy, yfinance |
+| DevOps | Docker, Docker Compose, GitHub Actions |
 
 ## Author
 
-**Pankaj (Tony) Kumar**  
-AI Engineer • Full Stack Developer • Generative AI & RAG Specialist
+**Pankaj (Tony) Kumar**
 
-[GitHub](https://github.com/hack2ai) • [LinkedIn](https://www.linkedin.com/in/pankaj-kumar-ab591a216)
+AI Engineer • Full Stack Developer • AI/ML Enthusiast
+
+GitHub: https://github.com/hack2ai
+LinkedIn: https://www.linkedin.com/in/pankaj-kumar-ab591a216

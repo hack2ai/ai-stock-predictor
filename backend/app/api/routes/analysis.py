@@ -4,9 +4,11 @@ from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, HTTPException, Path, Query, Request, status
 
 from app.api.schemas import StockAnalysisResponse
+from app.core.cache import analysis_cache
+from app.core.security import enforce_rate_limit
 from app.indicators.technical_indicators import add_technical_indicators
 from app.ml.predictor import predict_next_close
 from app.services.market_service import fetch_market_history
@@ -22,24 +24,15 @@ def _clean(value: Any) -> Any:
     return value
 
 
-@router.get("/{ticker}/analysis", response_model=StockAnalysisResponse)
-def analyze_stock(
-    ticker: str = Path(
-        ...,
-        min_length=1,
-        max_length=20,
-        pattern=r"^[A-Za-z0-9.^=\-]+$",
-        description="Market ticker symbol, for example AAPL or BTC-USD.",
-    ),
-    period: str = Query("2y", pattern="^(6mo|1y|2y|5y)$"),
-    history_limit: int = Query(120, ge=30, le=500),
-) -> StockAnalysisResponse:
-    symbol = ticker.strip().upper()
+def _build_analysis(symbol: str, period: str, history_limit: int) -> StockAnalysisResponse:
     market_data = fetch_market_history(symbol, period=period)
+    if market_data is None or market_data.empty:
+        raise ValueError("No market data is available for this ticker.")
+
     indicator_data = add_technical_indicators(market_data)
     prediction = predict_next_close(market_data)
-
     latest = indicator_data.iloc[-1]
+
     history: List[Dict[str, Any]] = []
     for index, row in indicator_data.tail(history_limit).iterrows():
         history.append({
@@ -75,3 +68,30 @@ def analyze_stock(
         prediction=prediction,
         history=history,
     )
+
+
+@router.get("/{ticker}/analysis", response_model=StockAnalysisResponse)
+def analyze_stock(
+    request: Request,
+    ticker: str = Path(..., min_length=1, max_length=20, pattern=r"^[A-Za-z0-9.^=\-]+$"),
+    period: str = Query("2y", pattern="^(6mo|1y|2y|5y)$"),
+    history_limit: int = Query(120, ge=30, le=500),
+) -> StockAnalysisResponse:
+    enforce_rate_limit(request)
+    symbol = ticker.strip().upper()
+    cache_key = f"analysis:{symbol}:{period}:{history_limit}"
+
+    try:
+        return analysis_cache.get_or_set(
+            cache_key,
+            lambda: _build_analysis(symbol, period, history_limit),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Market data or prediction service is temporarily unavailable.",
+        ) from exc

@@ -6,3 +6,5 @@ scikit-learn
 numpy
 websockets
 joblib
+pytest
+httpx2
